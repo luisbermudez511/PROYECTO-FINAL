@@ -1,15 +1,37 @@
 document.addEventListener('DOMContentLoaded', () => {
     
-   const USER_KEY = 'users'; 
+    const USER_KEY = 'users'; 
     const ACTIVE_USER_KEY = 'activeUserEmail';
     const CATALOG_KEY = 'productCatalog';
 
-    
+    // ==============================
+    // 👑 ADMIN PREDEFINIDO
+    // ==============================
+    (function ensureDefaultAdmin() {
+        let storedUsers = JSON.parse(localStorage.getItem(USER_KEY)) || [];
+
+        const defaultAdmin = {
+            id: 1,
+            name: "Admin",
+            email: "admin@vinilos.com",
+            password: "admin123",
+            isAdmin: true,
+            purchases: []
+        };
+
+        const adminExists = storedUsers.some(user => user.email === defaultAdmin.email);
+
+        if (!adminExists) {
+            storedUsers.push(defaultAdmin);
+            localStorage.setItem(USER_KEY, JSON.stringify(storedUsers));
+            console.log("Administrador por defecto añadido.");
+        }
+    })();
+
     const currentUserEmail = localStorage.getItem(ACTIVE_USER_KEY);
     let allUsers = JSON.parse(localStorage.getItem(USER_KEY)) || [];
     const currentUser = allUsers.find(user => user.email === currentUserEmail);
 
-    
     if (!currentUserEmail || !currentUser) {
         alert("No hay sesión activa o el usuario no existe. Serás redirigido al inicio de sesión.");
         localStorage.removeItem(ACTIVE_USER_KEY);
@@ -17,7 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    
     if (!currentUser.isAdmin) {
         alert("Acceso denegado. Serás redirigido al inicio de sesión.");
         localStorage.removeItem(ACTIVE_USER_KEY);
@@ -25,7 +46,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    
     function saveUsers() {
         const userIndex = allUsers.findIndex(user => user.email === currentUser.email);
         if (userIndex !== -1) {
@@ -37,7 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveAllUsers() {
         localStorage.setItem(USER_KEY, JSON.stringify(allUsers));
     }
-    
 
     function renderProfile() {
         const adminNameEl = document.getElementById('admin-name');
@@ -66,7 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            
             if (targetSectionId === 'product-management') {
                 loadProducts();
             } else if (targetSectionId === 'admin-management') {
@@ -75,16 +93,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-
     const defaultSection = document.getElementById('profile');
     if (defaultSection) {
         defaultSection.style.display = 'block';
         defaultSection.classList.remove('hidden');
-        
         const defaultNavButton = document.querySelector('.list-group-item-action[data-section="profile"]');
         if (defaultNavButton) defaultNavButton.classList.add('active');
     }
-
 
     const editFormContainers = document.querySelectorAll('.edit-form-container');
     document.querySelectorAll('.edit-btn').forEach(btn => {
@@ -133,7 +148,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('form-edit-admin-password').classList.add('hidden');
     });
 
-    
     function loadProducts() {
         const productList = document.getElementById('productList');
         let products = JSON.parse(localStorage.getItem(CATALOG_KEY)) || [];
@@ -161,7 +175,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function addProduct(name, artist, price) {
         let products = JSON.parse(localStorage.getItem(CATALOG_KEY)) || [];
-
         const newId = products.length > 0 ? Math.max(...products.map(p => p.id || 0)) + 1 : 1; 
         
         const newProduct = {
@@ -244,7 +257,6 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Este correo ya está registrado como usuario o administrador.");
             return;
         }
-        
 
         const newId = allUsers.length > 0 ? Math.max(...allUsers.map(u => u.id || 0)) + 1 : 1; 
 
@@ -269,7 +281,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         if (!confirm(`¿Está seguro de que desea eliminar al administrador con correo: ${email}?`)) return;
-
 
         allUsers = allUsers.filter(user => user.email !== email);
         saveAllUsers();
